@@ -49,6 +49,24 @@ func LoadEntries() ([]Entry, error) {
 	return entries, nil
 }
 
+func LoadEntriesSince(duration time.Duration) ([]Entry, error) {
+	entries, err := LoadEntries()
+	if err != nil {
+		return nil, err
+	}
+	cutoffTime := time.Now().Add(-duration)
+
+	var filteredEntries []Entry
+	for _, entry := range entries {
+		if entry.Date.After(cutoffTime) || entry.Date.Equal(cutoffTime) {
+			filteredEntries = append(filteredEntries, entry)
+		}
+	}
+
+	return filteredEntries, nil
+
+}
+
 func SaveEntry(message string) error {
 	entries, err := LoadEntries()
 	if err != nil {
