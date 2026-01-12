@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/emmd474/devlog/internal/storage"
+	"github.com/emmd474/devlog/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +19,29 @@ var todayCmd = &cobra.Command{
 		}
 
 		today := time.Now().Format("2006-01-02")
+		var output string
+		count := 0
 
 		for _, e := range entries {
 			if e.Date.Format("2006-01-02") == today {
-				fmt.Printf("- %s\n", e.Message)
+				line := fmt.Sprintf(
+					"%s %s",
+					ui.BulletStyle.Render("•"),
+					ui.MessageStyle.Render(e.Message),
+				)
+				output += line + "\n"
+				count++
 			}
 		}
+
+		if count == 0 {
+			fmt.Println(ui.EmptyStyle.Render("No entries for today."))
+			return nil
+		}
+
+		header := ui.HeaderStyle.Render("Today's Entries")
+		fmt.Println(header)
+		fmt.Print(output)
 		return nil
 	},
 }
