@@ -7,10 +7,10 @@ type item struct {
 }
 
 func (i item) Title() string {
-	return i.entry.Date.Format("2006-01-02")
+	return i.entry.Date.Format("2006-01-02 15:04")
 }
 
-func (i item) Descripation() string {
+func (i item) Description() string {
 	return i.entry.Message
 }
 
