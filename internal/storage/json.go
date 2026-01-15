@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -8,6 +10,15 @@ import (
 
 	"github.com/emmd474/devlog/internal/model"
 )
+
+// generateID creates a unique ID using crypto/rand
+func generateID() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
 
 func dataFilePath() (string, error) {
 	home, err := os.UserHomeDir()
@@ -43,6 +54,26 @@ func LoadEntries() ([]model.Entry, error) {
 		return nil, err
 	}
 
+	// Ensure all entries have IDs
+	modified := false
+	for i := range entries {
+		if entries[i].ID == "" {
+			id, err := generateID()
+			if err != nil {
+				return nil, err
+			}
+			entries[i].ID = id
+			modified = true
+		}
+	}
+
+	// Save entries if we added IDs
+	if modified {
+		if err := SaveEntries(entries); err != nil {
+			return nil, err
+		}
+	}
+
 	return entries, nil
 }
 
@@ -70,7 +101,13 @@ func SaveEntry(message string) error {
 		return err
 	}
 
+	id, err := generateID()
+	if err != nil {
+		return err
+	}
+
 	entry := model.Entry{
+		ID:      id,
 		Message: message,
 		Date:    time.Now(),
 	}
